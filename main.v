@@ -17,7 +17,7 @@ struct Vertex_t {
 struct App {
 	pass_action gfx.PassAction
 mut:
-	gg              &gg.Context = unsafe { nil }
+	ctx              &gg.Context = unsafe { nil }
 	shader_pipeline gfx.Pipeline
 	bind            gfx.Bindings
 	mouse_x         f32
@@ -28,7 +28,7 @@ fn main() {
 	mut app := &App{
 		pass_action: gfx.create_clear_pass_action(0.0, 0.0, 0.0, 1.0) // This will create a black color as a default pass (window background color)
 	}
-	app.gg = gg.new_context(
+	app.ctx = gg.new_context(
 		width: 1920
 		height: 1080
 		user_data: app
@@ -39,7 +39,7 @@ fn main() {
 		sample_count: 4
 		fullscreen: true
 	)
-	app.gg.run()
+	app.ctx.run()
 }
 
 fn event(mut e gg.Event, mut app App) {
@@ -99,11 +99,13 @@ fn frame(mut app App) {
 
 
 	// Create the data to send
-	size := app.gg.window_size()
+	size := app.ctx.window_size()
 
+	mouse_x := app.mouse_x/f32(size.width)
+	mouse_y := app.mouse_y/f32(size.width)
 	// vfmt off
 	tmp_fs_params := [
-		f32(size.width), f32(size.height), 0.0, 0.0 // /!\ need to send the floats 4 by 4 
+		f32(size.width), f32(size.height), mouse_x, mouse_y // /!\ need to send the floats 4 by 4 
 	]!
 	// vfmt on
 	fs_uniforms_range := gfx.Range{
