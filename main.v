@@ -29,8 +29,8 @@ fn main() {
 		pass_action: gfx.create_clear_pass_action(0.0, 0.0, 0.0, 1.0) // This will create a black color as a default pass (window background color)
 	}
 	app.gg = gg.new_context(
-		width: 800
-		height: 450
+		width: 1920
+		height: 1080
 		user_data: app
 		init_fn: init
 		frame_fn: frame
@@ -98,6 +98,7 @@ fn frame(mut app App) {
 	gfx.apply_bindings(&app.bind)
 
 	// Create the data to send
+/*
 	size := app.gg.window_size()
 	mouse_x := (app.mouse_x - size.width / 2) / f32(size.width) * 2
 	mouse_y := -(app.mouse_y - size.height / 2) / f32(size.height) * 2
@@ -116,7 +117,7 @@ fn frame(mut app App) {
 	}
 	// send it to the fragment shader
 	gfx.apply_uniforms(.fs, C.SLOT_fs_params, &fs_uniforms_range)
-
+*/
 	gfx.draw(0, 6, 1)
 
 	gfx.end_pass()
