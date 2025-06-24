@@ -18,6 +18,17 @@ uniform fs_params {
 	vec2 mouse;
 };
 
+struct HitRecord {
+	vec3 p;
+	vec3 normal;
+	float t;
+	bool front_face;
+};
+
+struct Sphere {
+	vec3 center;
+	float radius;
+};
 
 struct Ray {
 	vec3 orig;
@@ -32,18 +43,40 @@ vec3 at(in Ray r, in float t) {
 	return r.orig + t * r.dir;
 }
 
-float hit_sphere(in vec3 center, in float radius, in Ray r) {
-	vec3 oc = center - r.orig;
+void set_face_normal(out HitRecord rec, in Ray r, in vec3 outward_normal) {
+	// outward_normal is assumed to have unit length
+
+	rec.front_face = dot(r.dir, outward_normal) < 0.0;
+	rec.normal = rec.front_face ? outward_normal : -outward_normal;
+}
+
+bool hit_sphere(in Sphere s, in Ray r, in float ray_tmin, float ray_tmax, out HitRecord rec) {
+	vec3 oc = s.center - r.orig;
 	float a = dot(r.dir, r.dir);
-	float b = -2.0 * dot(r.dir, oc);
-	float c = dot(oc, oc) - radius*radius;
-	float discriminant = b*b - 4*a*c;
+	float h = dot(r.dir, oc);
+	float c = dot(oc, oc) - s.radius*s.radius;
+	float discriminant = h*h - a*c;
 
 	if (discriminant < 0) {
-		return -1.0;
-	} else {
-		return (-b - sqrt(discriminant)) / (2.0*a);
+		return false;
 	}
+
+	float sqrtd = sqrt(discriminant);
+	// find the nearest root that lies in the acceptable range
+	float root = (h - sqrtd) / a;
+	if (root <= ray_tmin || ray_tmax <= root) {
+		root = (h + sqrtd) / a;
+		if (root <= ray_tmin || ray_tmax <= root) {
+			return false;
+		}
+	}
+	
+	rec.t = root;
+	rec.p = at(r, rec.t);
+	vec3 outward_normal = (rec.p - s.center) / s.radius;
+	set_face_normal(rec, r, outward_normal);
+
+	return true;
 }
 
 vec3 ray_color(in Ray r) {
