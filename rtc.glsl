@@ -32,7 +32,9 @@ vec3 at(in Ray r, in float t) {
 }
 
 vec3 ray_color(in Ray r) {
-	return vec3(0);
+	vec3 unit_direction = normalize(r.dir);
+	float a = 0.5*(unit_direction.y + 1.0);
+	return (1.0-a)*vec3(1.0, 1.0, 1.0) + a*vec3(0.5, 0.7, 1.0);
 }
 
 void main() {
