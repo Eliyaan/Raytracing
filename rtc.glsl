@@ -37,7 +37,7 @@ vec3 ray_color(in Ray r) {
 
 void main() {
 	// gl_FragCoord
-/*
+
 	// for all the pixels:
 	float focal_length = 1.0;
 	vec3 cam_center = vec3(0, 0, 0);
@@ -55,9 +55,7 @@ void main() {
 
 	vec3 pixel_color = ray_color(r);
 	
-	frag_color = vec4(pixel_color, res.x);
-*/
-	frag_color = vec4(res.x);
+	frag_color = vec4(pixel_color, 1.0);
 }
 @end
 

@@ -100,8 +100,7 @@ fn frame(mut app App) {
 
 	// Create the data to send
 	size := app.gg.window_size()
-	mouse_x := (app.mouse_x - size.width / 2) / f32(size.width) * 2
-	mouse_y := -(app.mouse_y - size.height / 2) / f32(size.height) * 2
+
 	// vfmt off
 	tmp_fs_params := [
 		f32(size.width), f32(size.height), 0.0, 0.0 // /!\ need to send the floats 4 by 4 
