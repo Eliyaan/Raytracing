@@ -26,6 +26,11 @@ uniform fs_params {
 	vec2 mouse;
 };
 
+struct Interval {
+	float mini;
+	float maxi;
+};
+
 struct HitRecord {
 	vec3 p;
 	vec3 normal;
@@ -53,6 +58,18 @@ vec3 at(in Ray r, in float t) {
 	return r.orig + t * r.dir;
 }
 
+float i_size(in Interval i) {
+	return i.maxi - i.mini;
+}
+
+bool i_contain(in Interval i, float x) {
+	return i.mini <= x && x <= i.maxi;
+}
+
+bool i_surrounds(in Interval i, float x) {
+	return i.mini < x && x < i.maxi;
+}
+
 void set_face_normal(inout HitRecord rec, in Ray r, in vec3 outward_normal) {
 	// outward_normal is assumed to have unit length
 
@@ -60,7 +77,7 @@ void set_face_normal(inout HitRecord rec, in Ray r, in vec3 outward_normal) {
 	rec.normal = rec.front_face ? outward_normal : -outward_normal;
 }
 
-bool hit_sphere(in Sphere s, in Ray r, in float ray_tmin, in float ray_tmax, out HitRecord rec) {
+bool hit_sphere(in Sphere s, in Ray r, in Interval ray_t, out HitRecord rec) {
 	vec3 oc = s.center - r.orig;
 	float a = dot(r.dir, r.dir);
 	float h = dot(r.dir, oc);
@@ -75,9 +92,9 @@ bool hit_sphere(in Sphere s, in Ray r, in float ray_tmin, in float ray_tmax, out
 	float sqrtd = sqrt(discriminant);
 	// find the nearest root that lies in the acceptable range
 	float root = (h - sqrtd) / a;
-	if (root <= ray_tmin || ray_tmax <= root) {
+	if (root <= ray_t.mini || ray_t.maxi <= root) {
 		root = (h + sqrtd) / a;
-		if (root <= ray_tmin || ray_tmax <= root) {
+		if (root <= ray_t.mini || ray_t.maxi <= root) {
 			return false;
 		}
 	}
@@ -90,13 +107,13 @@ bool hit_sphere(in Sphere s, in Ray r, in float ray_tmin, in float ray_tmax, out
 	return true;
 }
 
-bool hit_all(in Ray r, in float ray_tmin, in float ray_tmax, out HitRecord rec) {
+bool hit_all(in Ray r, in Interval ray_t, out HitRecord rec) {
 	HitRecord tmp_rec;
 	bool hit_anything;
-	float closest_so_far = ray_tmax;
+	float closest_so_far = ray_t.maxi;
 
 	for (int i = 0; i < hittables.length(); i++) {
-		if (hit_sphere(hittables[i], r, ray_tmin, closest_so_far, tmp_rec)) {
+		if (hit_sphere(hittables[i], r, Interval(ray_t.mini, closest_so_far), tmp_rec)) {
 			hit_anything = true;
 			closest_so_far = tmp_rec.t;
 			rec = tmp_rec;
@@ -108,7 +125,7 @@ bool hit_all(in Ray r, in float ray_tmin, in float ray_tmax, out HitRecord rec) 
 
 vec3 ray_color(in Ray r) {
 	HitRecord rec;
-	if (hit_all(r, 0, inf, rec)) {
+	if (hit_all(r, Interval(0, inf), rec)) {
 		return 0.5 * (rec.normal + 1);
 	}
 
